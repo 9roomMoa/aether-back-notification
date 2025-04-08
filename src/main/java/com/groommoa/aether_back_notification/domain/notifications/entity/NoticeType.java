@@ -1,5 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,4 +15,9 @@ public enum NoticeType {
     PROJECT_ADDED("project_added");
 
     private final String key;
+
+    @JsonCreator
+    public static NoticeType from(String value){
+        return value != null ? NoticeType.valueOf(value.toUpperCase()) : null;
+    }
 }
