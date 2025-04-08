@@ -1,9 +1,7 @@
 package com.groommoa.aether_back_notification.domain.notifications.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 import org.bson.types.ObjectId;
 
 @Getter
@@ -12,6 +10,9 @@ import org.bson.types.ObjectId;
 @AllArgsConstructor
 public class RelatedContent {
 
+    @NotBlank(message = "relatedContent의 id는 null 값이거나 공백일 수 없습니다.")
     private String id;
+
+    @NotBlank(message = "relatedContent의 type은 null 값이거나 공백일 수 없습니다.")
     private String type;
 }
