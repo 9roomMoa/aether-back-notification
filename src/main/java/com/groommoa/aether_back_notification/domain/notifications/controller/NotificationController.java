@@ -25,14 +25,7 @@ public class NotificationController {
         Notification notification = notificationService.createNotification(request);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("message", notification.getMessage());
-        result.put("sender", notification.getSender().toString());
-        result.put("receiver", notification.getReceiver().toString());
-        result.put("noticeType", notification.getNoticeType());
-        result.put("relatedContent", notification.getRelatedContent());
-        result.put("isRead", notification.isRead());
-        result.put("createdAt", notification.getCreatedAt());
-        result.put("updatedAt", notification.getUpdatedAt());
+        result.put("notification", notification);
 
         CommonResponse response = new CommonResponse(
                 HttpStatus.OK, "알림 생성에 성공했습니다.", result
