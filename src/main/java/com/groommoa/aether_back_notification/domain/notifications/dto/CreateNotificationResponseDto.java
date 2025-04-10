@@ -2,9 +2,11 @@ package com.groommoa.aether_back_notification.domain.notifications.dto;
 
 import com.groommoa.aether_back_notification.domain.notifications.common.NoticeType;
 import com.groommoa.aether_back_notification.domain.notifications.entity.Notification;
+import lombok.Getter;
 
 import java.time.Instant;
 
+@Getter
 public class CreateNotificationResponseDto {
 
     private final String message;
