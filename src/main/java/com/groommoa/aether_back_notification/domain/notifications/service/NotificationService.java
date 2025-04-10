@@ -18,6 +18,7 @@ public class NotificationService {
     @Transactional
     public Notification createNotification(CreateNotificationRequestDto request) {
         Notification notification = Notification.builder()
+                .project(request.getProject())
                 .message(request.getMessage())
                 .sender(request.getSender())
                 .receiver(request.getReceiver())
