@@ -1,5 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.entity;
 
+import com.groommoa.aether_back_notification.domain.notifications.common.NoticeType;
 import lombok.Builder;
 import lombok.Getter;
 import org.bson.types.ObjectId;
@@ -11,15 +12,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document(collection = "notifications")
+@Builder
 @Getter
 public class Notification {
 
     @Id
     private ObjectId id;
 
+    private ObjectId project;
+
     private String message;
 
-    private ObjectId sender;
+    @Builder.Default
+    private ObjectId sender = null;
 
     private ObjectId receiver;
 
@@ -27,22 +32,12 @@ public class Notification {
 
     private RelatedContent relatedContent;
 
-    private boolean isRead;
+    @Builder.Default
+    private boolean isRead = false;
 
     @CreatedDate
     private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    @Builder
-    public Notification(String message, ObjectId sender, ObjectId receiver, NoticeType noticeType,
-                        RelatedContent relatedContent, boolean isRead) {
-        this.message = message;
-        this.sender = sender;
-        this.receiver = receiver;
-        this.noticeType = noticeType;
-        this.relatedContent = relatedContent;
-        this.isRead = isRead;
-    }
 }

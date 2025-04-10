@@ -1,4 +1,4 @@
-package com.groommoa.aether_back_notification.domain.notifications.entity;
+package com.groommoa.aether_back_notification.domain.notifications.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -11,8 +11,10 @@ public enum NoticeType {
     TASK_UPDATED("task_updated"),
     TASK_DEADLINE("task_deadline"),
     COMMENT_ADDED("comment_added"),
+    COMMENT_UPDATED("comment_updated"),
     DOCUMENT_UPLOADED("document_uploaded"),
-    PROJECT_ADDED("project_added");
+    PROJECT_ADDED("project_added"),
+    PROJECT_UPDATED("project_updated"),;
 
     private final String key;
 
