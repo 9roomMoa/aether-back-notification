@@ -1,4 +1,4 @@
-package com.groommoa.aether_back_notification.domain.notifications.entity;
+package com.groommoa.aether_back_notification.domain.notifications.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;

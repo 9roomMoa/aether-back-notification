@@ -1,5 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.entity;
 
+import com.groommoa.aether_back_notification.domain.notifications.common.NoticeType;
 import lombok.Builder;
 import lombok.Getter;
 import org.bson.types.ObjectId;

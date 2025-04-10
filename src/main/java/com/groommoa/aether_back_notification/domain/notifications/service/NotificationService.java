@@ -18,13 +18,13 @@ public class NotificationService {
     @Transactional
     public Notification createNotification(CreateNotificationRequestDto request) {
         Notification notification = Notification.builder()
-                .project(request.getProject())
+                .project(new ObjectId(request.getProject()))
                 .message(request.getMessage())
-                .sender(request.getSender())
-                .receiver(request.getReceiver())
+                .sender(new ObjectId(request.getSender()))
+                .receiver(new ObjectId(request.getReceiver()))
                 .noticeType(request.getNoticeType())
                 .relatedContent(RelatedContent.builder()
-                        .id(request.getRelatedContent().getId())
+                        .id(new ObjectId(request.getRelatedContent().getId()))
                         .type(request.getRelatedContent().getType())
                         .build())
                 .isRead(request.isRead())

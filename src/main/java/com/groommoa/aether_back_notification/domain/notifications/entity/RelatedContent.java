@@ -1,6 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.entity;
 
-import jakarta.validation.constraints.NotBlank;
+import com.groommoa.aether_back_notification.domain.notifications.common.RelatedContentType;
 import lombok.*;
 import org.bson.types.ObjectId;
 
@@ -10,9 +10,7 @@ import org.bson.types.ObjectId;
 @AllArgsConstructor
 public class RelatedContent {
 
-    @NotBlank(message = "relatedContent의 id는 null 값이거나 공백일 수 없습니다.")
-    private String id;
+    private ObjectId id;
 
-    @NotBlank(message = "relatedContent의 type은 null 값이거나 공백일 수 없습니다.")
-    private String type;
+    private RelatedContentType type;
 }
