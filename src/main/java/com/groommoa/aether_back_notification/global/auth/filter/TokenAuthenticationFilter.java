@@ -29,13 +29,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         String accessToken = resolveToken(request);
 
-        if (jwtProvider.validateToken(accessToken)){
-
-            setAuthentication(accessToken);
-        } else {
-            throw new TokenException(ErrorCode.TOKEN_EXPIRED);
+        if (accessToken != null) {
+            if (jwtProvider.validateToken(accessToken)) {
+                setAuthentication(accessToken);
+            } else {
+                throw new TokenException(ErrorCode.INVALID_TOKEN);
+            }
         }
 
         filterChain.doFilter(request, response);
