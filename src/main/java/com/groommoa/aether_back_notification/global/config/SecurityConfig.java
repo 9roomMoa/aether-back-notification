@@ -4,6 +4,7 @@ import com.groommoa.aether_back_notification.global.auth.filter.TokenAuthenticat
 import com.groommoa.aether_back_notification.global.auth.filter.TokenExceptionFilter;
 import com.groommoa.aether_back_notification.global.auth.handler.CustomAccessDeniedHandler;
 import com.groommoa.aether_back_notification.global.auth.handler.CustomAuthenticationEntryPoint;
+import com.groommoa.aether_back_notification.global.auth.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,8 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+
+    private final TokenExceptionFilter tokenExceptionFilter;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
 
     @Bean
@@ -74,9 +77,8 @@ public class SecurityConfig {
                 )
 
                 // JWT 인증 필터
-                .addFilterBefore(tokenAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenExceptionFilter, tokenAuthenticationFilter.getClass())
 
                 // 인증 및 권한 예외 처리 설정
                 .exceptionHandling(e -> e
