@@ -7,6 +7,7 @@ import com.groommoa.aether_back_notification.domain.notifications.entity.Notific
 import com.groommoa.aether_back_notification.domain.notifications.entity.RelatedContent;
 import com.groommoa.aether_back_notification.domain.notifications.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +42,18 @@ public class NotificationService {
                 .totalElements(resultPage.getTotalElements())
                 .hasNext(resultPage.hasNext())
                 .build();
+    }
+
+    public List<String> getNotificationIds(String userId, String lastEventId){
+        ObjectId receiverId = new ObjectId(userId);
+        ObjectId lastId = new ObjectId(lastEventId);
+
+        List<Notification> missedNotifications = notificationRepository
+                .findByReceiverAndIdGreaterThanOrderByCreatedAtDesc(receiverId, lastId);
+
+        return missedNotifications.stream()
+                .map(n -> n.getId().toHexString())
+                .toList();
     }
 
 

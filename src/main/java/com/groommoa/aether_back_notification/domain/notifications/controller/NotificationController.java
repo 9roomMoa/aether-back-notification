@@ -61,7 +61,11 @@ public class NotificationController {
     }
 
     @GetMapping(value="/subscribe", produces= MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@AuthenticationPrincipal Claims claims){
-        return sseService.subscribe(claims.getSubject());
+    public SseEmitter subscribe(
+            @AuthenticationPrincipal Claims claims,
+            @RequestHeader(value="Last-Event-ID", required = false) String lastEventId
+    ) {
+        String userId = claims.getSubject();
+        return sseService.subscribe(userId, lastEventId);
     }
 }
