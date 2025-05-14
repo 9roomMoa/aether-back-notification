@@ -66,7 +66,7 @@ public class NotificationService {
                 .receiver(new ObjectId(request.getReceiver()))
                 .noticeType(request.getNoticeType())
                 .relatedContent(RelatedContent.builder()
-                        .id(new ObjectId(request.getRelatedContent().getId()))
+                        .id(request.getRelatedContent().getId())
                         .type(request.getRelatedContent().getType())
                         .build())
                 .isRead(request.isRead())
