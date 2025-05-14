@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 public class RelatedContent {
 
-    @Field("_id")
+    @Field("id")
     private ObjectId id;
 
     private RelatedContentType type;
