@@ -12,6 +12,8 @@ import com.groommoa.aether_back_notification.global.common.response.CommonRespon
 import com.groommoa.aether_back_notification.global.common.utils.DtoUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,8 +52,8 @@ public class NotificationController {
     @GetMapping("")
     public ResponseEntity<CommonResponse> getNotifications(
             @AuthenticationPrincipal Claims claims,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") @Min(0) Integer page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size
     ) {
         NotificationPageResponseDto responseDto = notificationService.getNotifications(claims.getSubject(), page, size);
         CommonResponse response = new CommonResponse(
