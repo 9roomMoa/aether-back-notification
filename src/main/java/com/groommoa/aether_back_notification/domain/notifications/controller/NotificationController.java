@@ -15,12 +15,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@Slf4j
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
 @RestController
@@ -68,6 +70,8 @@ public class NotificationController {
             @RequestHeader(value="Last-Event-ID", required = false) String lastEventId
     ) {
         String userId = claims.getSubject();
+        log.info("SSE 구독 요청 둘어옴 (userId={})", userId);
+
         return sseService.subscribe(userId, lastEventId);
     }
 }
