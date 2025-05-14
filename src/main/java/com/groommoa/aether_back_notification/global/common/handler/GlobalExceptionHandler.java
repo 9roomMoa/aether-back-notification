@@ -6,20 +6,39 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.groommoa.aether_back_notification.global.common.constants.HttpStatus;
 import com.groommoa.aether_back_notification.global.common.response.ErrorResponse;
 import com.mongodb.MongoException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bson.types.ObjectId;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, Object> details = ex.getConstraintViolations().stream()
+                .collect(Collectors.toMap(
+                        v -> v.getPropertyPath().toString(),
+                        ConstraintViolation::getMessage,
+                        (existing, replacement) -> existing
+                ));
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST, "잘못된 요청 파라미터입니다.", details);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
     @ExceptionHandler(AsyncRequestTimeoutException.class)
     public ResponseEntity<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex) {
@@ -131,6 +150,55 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String field = ex.getName();
+        String value = String.valueOf(ex.getValue());
+        Class<?> expectedType = ex.getRequiredType();
+
+        String expected = "유효한 값";
+        if (expectedType == Integer.class || expectedType == Long.class) {
+            expected = "정수 값";
+        } else if (expectedType == Boolean.class) {
+            expected = "true 또는 false 값";
+        } else if (expectedType != null && expectedType.isEnum()) {
+            expected = "다음 중 하나의 값: " + Arrays.toString(expectedType.getEnumConstants());
+        }
+
+        Map<String, Object> details = Map.of(
+                "field", field,
+                "reason", String.format("'%s'은(는) %s 이어야 합니다.", value, expected)
+        );
+
+        ErrorResponse response = new ErrorResponse(
+                400,
+                "요청 파라미터 형식이 올바르지 않습니다.",
+                details
+        );
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        Map<String, Object> details = new LinkedHashMap<>();
+
+        ex.getParameterValidationResults().forEach(result -> {
+            result.getResolvableErrors().forEach(error -> {
+                String field = extractParamName(error);
+                String reason = generateCustomMessage(error);
+                details.put(field, reason);
+            });
+        });
+
+        ErrorResponse response = new ErrorResponse(
+                400,
+                "요청 파라미터 검증에 실패했습니다.",
+                details
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
 
     @ExceptionHandler(MongoException.class)
     public ResponseEntity<ErrorResponse> handleMongoException(MongoException ex) {
@@ -158,5 +226,21 @@ public class GlobalExceptionHandler {
             return pathReference.substring(start, end);
         }
         return "unknown";
+    }
+
+    private String extractParamName(MessageSourceResolvable error) {
+        String[] codes = error.getCodes();
+        if (codes != null && codes.length > 0) {
+            String[] parts = codes[0].split("\\.");
+            return parts[parts.length - 1];
+        }
+        return "unknown";
+    }
+
+    private String generateCustomMessage(MessageSourceResolvable error) {
+        String code = error.getCodes() != null ? error.getCodes()[0] : "";
+        if (code.contains("Min")) return "0 이상의 정수여야 합니다.";
+        if (code.contains("Max")) return "지정된 최대값을 초과할 수 없습니다.";
+        return error.getDefaultMessage();
     }
 }
