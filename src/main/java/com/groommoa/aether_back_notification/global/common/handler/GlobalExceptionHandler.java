@@ -10,17 +10,40 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 
+import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public ResponseEntity<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex) {
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ErrorResponse> handleIOException(IOException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR, "알림 전송 중 네트워크 오류가 발생했습니다", null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
+        if (ex.getMessage() != null && ex.getMessage().contains("already committed")){
+            ErrorResponse response = new ErrorResponse(
+                    HttpStatus.CONFLICT, "이미 종료된 SSE 연결에 접근했습니다.", null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        // 다음 핸들러로 넘기기
+        throw ex;
+    }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
@@ -30,57 +53,61 @@ public class GlobalExceptionHandler {
         String message = "유효하지 않은 입력값입니다.";
         List<Map<String, String>> errors = new ArrayList<>();
 
-        if (cause instanceof InvalidFormatException ife) {
-            Class<?> targetType = ife.getTargetType();
-            Object invalidValue = ife.getValue();
-            String field = extractFieldFromPath(ife.getPathReference());
+        switch (cause) {
+            case InvalidFormatException ife -> {
+                Class<?> targetType = ife.getTargetType();
+                Object invalidValue = ife.getValue();
+                String field = extractFieldFromPath(ife.getPathReference());
 
-            if (targetType.isEnum()) {
-                message = String.format("'%s'은(는) 지원하지 않는 값입니다.", invalidValue);
-                errors.add(Map.of(
-                        "field", field,
-                        "reason", String.format("가능한 값: %s", Arrays.toString(targetType.getEnumConstants()))
-                ));
-            } else if (targetType == ObjectId.class) {
-                message = "잘못된 ObjectId 형식입니다.";
-                errors.add(Map.of(
-                        "field", field,
-                        "reason", String.format("'%s'은(는) 올바르지 않은 ObjectId입니다.", invalidValue)
-                ));
-            } else {
-                message = "입력값 형식 오류";
-                errors.add(Map.of(
-                        "field", field,
-                        "reason", String.format("'%s'은(는) %s 타입으로 변환할 수 없습니다.",
-                                invalidValue, targetType.getSimpleName())
-                ));
-            }
-        } else if (cause instanceof IllegalArgumentException iae && iae.getMessage() != null) {
-            String msg = iae.getMessage();
-            if (msg.contains("No enum constant")) {
-                try {
-                    String[] parts = msg.split("No enum constant ")[1].split("\\.");
-                    String className = String.join(".", Arrays.copyOf(parts, parts.length - 1));
-                    String invalidValue = parts[parts.length - 1];
-                    String simpleClassName = className.substring(className.lastIndexOf(".") + 1);
-
-                    message = "Enum 값이 올바르지 않습니다.";
+                if (targetType.isEnum()) {
+                    message = String.format("'%s'은(는) 지원하지 않는 값입니다.", invalidValue);
                     errors.add(Map.of(
-                            "field", simpleClassName,
-                            "reason", String.format("'%s'은(는) %s에서 지원하지 않는 Enum 값입니다. 대소문자나 오타를 확인해주세요.",
-                                    invalidValue, simpleClassName)
+                            "field", field,
+                            "reason", String.format("가능한 값: %s", Arrays.toString(targetType.getEnumConstants()))
                     ));
-                } catch (Exception e) {
-                    message = "Enum 값이 올바르지 않습니다.";
+                } else if (targetType == ObjectId.class) {
+                    message = "잘못된 ObjectId 형식입니다.";
+                    errors.add(Map.of(
+                            "field", field,
+                            "reason", String.format("'%s'은(는) 올바르지 않은 ObjectId입니다.", invalidValue)
+                    ));
+                } else {
+                    message = "입력값 형식 오류";
+                    errors.add(Map.of(
+                            "field", field,
+                            "reason", String.format("'%s'은(는) %s 타입으로 변환할 수 없습니다.",
+                                    invalidValue, targetType.getSimpleName())
+                    ));
                 }
-            } else {
-                message = msg;
             }
-        } else if (cause instanceof MismatchedInputException) {
-            message = "입력값의 형식이 맞지 않습니다.";
-        } else if (cause instanceof JsonParseException) {
-            message = "잘못된 JSON 형식입니다.";
-        } else message = Objects.requireNonNullElse(cause, ex).getMessage();
+            case IllegalArgumentException iae when iae.getMessage() != null -> {
+                String msg = iae.getMessage();
+                if (msg.contains("No enum constant")) {
+                    try {
+                        String[] parts = msg.split("No enum constant ")[1].split("\\.");
+                        String className = String.join(".", Arrays.copyOf(parts, parts.length - 1));
+                        String invalidValue = parts[parts.length - 1];
+                        String simpleClassName = className.substring(className.lastIndexOf(".") + 1);
+
+                        message = "Enum 값이 올바르지 않습니다.";
+                        errors.add(Map.of(
+                                "field", simpleClassName,
+                                "reason", String.format("'%s'은(는) %s에서 지원하지 않는 Enum 값입니다. 대소문자나 오타를 확인해주세요.",
+                                        invalidValue, simpleClassName)
+                        ));
+                    } catch (Exception e) {
+                        message = "Enum 값이 올바르지 않습니다.";
+                    }
+                } else if (msg.contains("invalid hexadecimal representation")) {
+                    message = "잘못된 ObjectId 형식입니다.";
+                } else {
+                    message = msg;
+                }
+            }
+            case MismatchedInputException mismatchedInputException -> message = "입력값의 형식이 맞지 않습니다.";
+            case JsonParseException jsonParseException -> message = "잘못된 JSON 형식입니다.";
+            case null, default -> message = Objects.requireNonNullElse(cause, ex).getMessage();
+        }
 
         Map<String, Object> details = errors.isEmpty() ? null : Map.of("errors", errors);
         ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST, message, details);
