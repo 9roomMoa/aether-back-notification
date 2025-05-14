@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class SseService {
 
     private final long SSE_TIMEOUT = 0L;    // 제한 없음
+    private final long SSE_RECONNECT_TIME = 3000L;  // 3초
     private final long KEEP_ALIVE_INITIAL_DELAY = 0L;
     private final long KEEP_ALIVE_INTERVAL = 30L;
     private final TimeUnit KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
@@ -51,7 +52,11 @@ public class SseService {
         SseEmitter emitter = sseRepository.get(userId);
         if (emitter != null) {
             try {
-                emitter.send(SseEmitter.event().name(eventName).data(data));
+                emitter.send(SseEmitter.event()
+                        .name(eventName)
+                        .data(data)
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .reconnectTime(SSE_RECONNECT_TIME));
             } catch (IOException e){
                 log.warn("SSE 전송 실패: " + e.getMessage());
                 sseRepository.delete(userId);
