@@ -24,7 +24,7 @@ public class CreateNotificationResponseDto {
         this.receiver = notification.getReceiver().toHexString();
         this.noticeType = notification.getNoticeType();
         this.relatedContent = RelatedContentDto.builder()
-                .id(notification.getRelatedContent().getId().toHexString())
+                .id(notification.getRelatedContent().getId())
                 .type(notification.getRelatedContent().getType())
                 .build();
         this.isRead = notification.isRead();

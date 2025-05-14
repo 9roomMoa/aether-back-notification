@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class RelatedContent {
 
     @Field("id")
-    private ObjectId id;
+    private String id;
 
     private RelatedContentType type;
 }

@@ -21,7 +21,7 @@ public class NotificationResponseDto {
     public static NotificationResponseDto from(Notification notification) {
         return NotificationResponseDto.builder()
                 .projectId(notification.getProject().toHexString())
-                .taskId(notification.getRelatedContent().getId().toHexString())
+                .taskId(notification.getRelatedContent().getId())
                 .noticeType(notification.getNoticeType())
                 .message(notification.getMessage())
                 .read(notification.isRead())
