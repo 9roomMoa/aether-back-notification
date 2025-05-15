@@ -1,6 +1,7 @@
 package com.groommoa.aether_back_notification.domain.notifications.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,16 @@ public enum NoticeType {
 
     @JsonCreator
     public static NoticeType from(String value){
-        return value != null ? NoticeType.valueOf(value.toUpperCase()) : null;
+        for (NoticeType type: NoticeType.values()) {
+            if (type.key.equalsIgnoreCase(value)){
+                return type;
+            }
+        }
+        throw new IllegalArgumentException(value);
+    }
+
+    @JsonValue
+    public String toValue(){
+        return key;
     }
 }

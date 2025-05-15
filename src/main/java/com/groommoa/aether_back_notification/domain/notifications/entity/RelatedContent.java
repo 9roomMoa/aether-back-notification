@@ -3,6 +3,7 @@ package com.groommoa.aether_back_notification.domain.notifications.entity;
 import com.groommoa.aether_back_notification.domain.notifications.common.RelatedContentType;
 import lombok.*;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Getter
 @Builder
@@ -10,7 +11,8 @@ import org.bson.types.ObjectId;
 @AllArgsConstructor
 public class RelatedContent {
 
-    private ObjectId id;
+    @Field("id")
+    private String id;
 
     private RelatedContentType type;
 }
