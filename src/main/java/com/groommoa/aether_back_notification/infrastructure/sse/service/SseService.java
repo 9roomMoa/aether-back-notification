@@ -1,6 +1,7 @@
 package com.groommoa.aether_back_notification.infrastructure.sse.service;
 
 import com.groommoa.aether_back_notification.domain.notifications.service.NotificationService;
+import com.groommoa.aether_back_notification.infrastructure.sse.repository.KeepAliveRepository;
 import com.groommoa.aether_back_notification.infrastructure.sse.repository.SseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,8 @@ public class SseService {
 
     private final long SSE_TIMEOUT = 0L;    // 제한 없음
     private final long SSE_RECONNECT_TIME = 3000L;  // 3초
-    private final long KEEP_ALIVE_INITIAL_DELAY = 0L;
-    private final long KEEP_ALIVE_INTERVAL = 30L;
-    private final TimeUnit KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
     private final SseRepository sseRepository;
+    private final KeepAliveRepository keepAliveRepository;
     private final NotificationService notificationService;
 
     public SseEmitter subscribe(String userId, String lastEventId){
@@ -39,11 +38,12 @@ public class SseService {
         emitter.onError((e) -> sseRepository.delete(userId));
 
         sendEvent(userId, "connect", "SSE connected");
-        startKeepAlive(userId);
 
         if (lastEventId != null && !lastEventId.isBlank()) {
             sendMissedNotifications(userId, lastEventId);
         }
+
+        keepAliveRepository.start(userId, () -> sendEvent(userId, "keep_alive", "ping"));
 
         return emitter;
     }
@@ -63,14 +63,6 @@ public class SseService {
             }
         }
 
-    }
-
-    private void startKeepAlive(String userId){
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-        executor.scheduleAtFixedRate(() -> {
-            sendEvent(userId, "keep_alive", "ping");
-        }, KEEP_ALIVE_INITIAL_DELAY, KEEP_ALIVE_INTERVAL, KEEP_ALIVE_UNIT);
     }
 
     private void sendMissedNotifications(String userId, String lastEventId){
