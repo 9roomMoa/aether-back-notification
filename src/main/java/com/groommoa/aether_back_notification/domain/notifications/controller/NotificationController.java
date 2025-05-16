@@ -79,7 +79,7 @@ public class NotificationController {
     @PatchMapping("/read")
     public ResponseEntity<CommonResponse> markNotificationsAsRead(
             @AuthenticationPrincipal Claims claims,
-            @RequestBody @Valid ReadNotificationsRequestDto request
+            @Valid @RequestBody ReadNotificationsRequestDto request
             ) {
         String userId = claims.getSubject();
         ReadNotificationResponseDto responseDto = notificationService.markNotificationsAsRead(userId, request);
