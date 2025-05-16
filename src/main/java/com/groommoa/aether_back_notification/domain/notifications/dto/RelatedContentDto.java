@@ -18,4 +18,9 @@ public class RelatedContentDto {
     @ValidEnum(enumClass = RelatedContentType.class, message = "relatedContent의 type이 유효하지 않습니다.")
     @NotNull(message = "relatedContent의 type은 null 값일 수 없습니다.")
     private RelatedContentType type;
+
+    @NotBlank(message = "relatedContent의 projectTitle은 null 값이거나 공백일 수 없습니다.")
+    private String projectTitle;
+
+    private String taskTitle;
 }

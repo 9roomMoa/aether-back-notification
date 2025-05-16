@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum RelatedContentType {
     Task("TASK"),
     Comment("COMMENT"),
-    Document("DOCUMENT");
+    Document("DOCUMENT"),
+    Project("PROJECT");
 
     private final String key;
 }

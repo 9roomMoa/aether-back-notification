@@ -14,7 +14,7 @@ public enum NoticeType {
     COMMENT_ADDED("comment_added"),
     COMMENT_UPDATED("comment_updated"),
     DOCUMENT_UPLOADED("document_uploaded"),
-    PROJECT_ADDED("project_added"),
+    PROJECT_ASSIGNED("project_assigned"),
     PROJECT_UPDATED("project_updated"),;
 
     private final String key;
