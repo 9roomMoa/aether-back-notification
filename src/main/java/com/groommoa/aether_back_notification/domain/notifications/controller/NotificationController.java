@@ -1,9 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.controller;
 
-import com.groommoa.aether_back_notification.domain.notifications.dto.CreateNotificationRequestDto;
-import com.groommoa.aether_back_notification.domain.notifications.dto.CreateNotificationResponseDto;
-import com.groommoa.aether_back_notification.domain.notifications.dto.NotificationPageResponseDto;
-import com.groommoa.aether_back_notification.domain.notifications.dto.NotificationResponseDto;
+import com.groommoa.aether_back_notification.domain.notifications.dto.*;
 import com.groommoa.aether_back_notification.domain.notifications.entity.Notification;
 import com.groommoa.aether_back_notification.domain.notifications.service.NotificationService;
 import com.groommoa.aether_back_notification.infrastructure.sse.service.SseService;
@@ -16,11 +13,15 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequestMapping("/notifications")
@@ -73,5 +74,20 @@ public class NotificationController {
         log.info("SSE 구독 요청 둘어옴 (userId={})", userId);
 
         return sseService.subscribe(userId, lastEventId);
+    }
+
+    @PatchMapping("/read")
+    public ResponseEntity<CommonResponse> markNotificationsAsRead(
+            @AuthenticationPrincipal Claims claims,
+            @Valid @RequestBody ReadNotificationsRequestDto request
+            ) {
+        String userId = claims.getSubject();
+        ReadNotificationResponseDto responseDto = notificationService.markNotificationsAsRead(userId, request);
+
+        CommonResponse response = new CommonResponse(
+                HttpStatus.OK, "알림 읽음 요청이 처리되었습니다.", DtoUtils.toMap(responseDto)
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,8 +1,6 @@
 package com.groommoa.aether_back_notification.domain.notifications.service;
 
-import com.groommoa.aether_back_notification.domain.notifications.dto.CreateNotificationRequestDto;
-import com.groommoa.aether_back_notification.domain.notifications.dto.NotificationPageResponseDto;
-import com.groommoa.aether_back_notification.domain.notifications.dto.NotificationResponseDto;
+import com.groommoa.aether_back_notification.domain.notifications.dto.*;
 import com.groommoa.aether_back_notification.domain.notifications.entity.Notification;
 import com.groommoa.aether_back_notification.domain.notifications.entity.RelatedContent;
 import com.groommoa.aether_back_notification.domain.notifications.repository.NotificationRepository;
@@ -16,8 +14,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotificationService {
@@ -75,5 +76,39 @@ public class NotificationService {
                 .build();
 
         return notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public ReadNotificationResponseDto markNotificationsAsRead(String userId, ReadNotificationsRequestDto request){
+        List<String> updatedIds = new ArrayList<>();
+        List<String> alreadyReadIds = new ArrayList<>();
+        List<String> notFoundIds = new ArrayList<>();
+        List<String> accessDeniedIds = new ArrayList<>();
+
+        List<String> notificationIds = request.getNotificationIds();
+        for (String id : notificationIds) {
+            Optional<Notification> optionalNotification = notificationRepository.findById(id);
+            if (optionalNotification.isEmpty()){
+                notFoundIds.add(id);
+                continue;
+            }
+            Notification notification = optionalNotification.get();
+
+            // 읽음 요청한 유저 id와 대상 알림의 수신자(receiver) id가 서로 일치하는지 검사
+            if (!notification.getReceiver().toHexString().equals(userId)) {
+                accessDeniedIds.add(id);
+                continue;
+            }
+
+            if (!notification.isRead()){
+                notification.setRead(true);
+                notificationRepository.save(notification);
+
+                updatedIds.add(id);
+            } else {
+                alreadyReadIds.add(id);
+            }
+        }
+        return new ReadNotificationResponseDto(updatedIds, alreadyReadIds, notFoundIds, accessDeniedIds);
     }
 }
