@@ -15,4 +15,8 @@ public class RelatedContent {
     private String id;
 
     private RelatedContentType type;
+
+    private String projectTitle;
+
+    private String taskTitle;
 }

@@ -26,6 +26,8 @@ public class CreateNotificationResponseDto {
         this.relatedContent = RelatedContentDto.builder()
                 .id(notification.getRelatedContent().getId())
                 .type(notification.getRelatedContent().getType())
+                .projectTitle(notification.getRelatedContent().getProjectTitle())
+                .taskTitle(notification.getRelatedContent().getTaskTitle())
                 .build();
         this.isRead = notification.isRead();
         this.createdAt = notification.getCreatedAt();

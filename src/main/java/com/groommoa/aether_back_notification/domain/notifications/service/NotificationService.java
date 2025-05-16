@@ -68,6 +68,8 @@ public class NotificationService {
                 .relatedContent(RelatedContent.builder()
                         .id(request.getRelatedContent().getId())
                         .type(request.getRelatedContent().getType())
+                        .projectTitle(request.getRelatedContent().getProjectTitle())
+                        .taskTitle(request.getRelatedContent().getTaskTitle())
                         .build())
                 .isRead(request.isRead())
                 .build();
