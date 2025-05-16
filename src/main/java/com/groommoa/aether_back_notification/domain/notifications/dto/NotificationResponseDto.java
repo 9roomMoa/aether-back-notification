@@ -10,8 +10,8 @@ import lombok.Getter;
 @Builder
 public class NotificationResponseDto {
 
-    private final String projectId;
-    private final String taskId;
+    private final String projectTitle;
+    private final String taskTitle;
     private final NoticeType noticeType;
     private final String message;
     @JsonProperty("isRead")
@@ -20,8 +20,8 @@ public class NotificationResponseDto {
 
     public static NotificationResponseDto from(Notification notification) {
         return NotificationResponseDto.builder()
-                .projectId(notification.getProject().toHexString())
-                .taskId(notification.getRelatedContent().getId())
+                .projectTitle(notification.getRelatedContent().getProjectTitle())
+                .taskTitle(notification.getRelatedContent().getTaskTitle())
                 .noticeType(notification.getNoticeType())
                 .message(notification.getMessage())
                 .read(notification.isRead())
