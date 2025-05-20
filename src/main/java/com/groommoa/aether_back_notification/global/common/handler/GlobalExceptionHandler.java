@@ -3,7 +3,8 @@ package com.groommoa.aether_back_notification.global.common.handler;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.groommoa.aether_back_notification.global.common.constants.HttpStatus;
+import com.groommoa.aether_back_notification.domain.notifications.exception.NotificationException;
+import com.groommoa.aether_back_notification.global.common.exception.ErrorCode;
 import com.groommoa.aether_back_notification.global.common.response.ErrorResponse;
 import com.mongodb.MongoException;
 import jakarta.validation.ConstraintViolation;
@@ -11,6 +12,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bson.types.ObjectId;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
@@ -36,7 +38,7 @@ public class GlobalExceptionHandler {
                         ConstraintViolation::getMessage,
                         (existing, replacement) -> existing
                 ));
-        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST, "잘못된 요청 파라미터입니다.", details);
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "잘못된 요청 파라미터입니다.", details);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -48,7 +50,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ErrorResponse> handleIOException(IOException ex) {
         ErrorResponse response = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR, "알림 전송 중 네트워크 오류가 발생했습니다", null);
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), "알림 전송 중 네트워크 오류가 발생했습니다", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
@@ -56,7 +58,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
         if (ex.getMessage() != null && ex.getMessage().contains("already committed")){
             ErrorResponse response = new ErrorResponse(
-                    HttpStatus.CONFLICT, "이미 종료된 SSE 연결에 접근했습니다.", null);
+                    HttpStatus.CONFLICT.value(), "이미 종료된 SSE 연결에 접근했습니다.", null);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
@@ -129,7 +131,7 @@ public class GlobalExceptionHandler {
         }
 
         Map<String, Object> details = errors.isEmpty() ? null : Map.of("errors", errors);
-        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST, message, details);
+        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, details);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -145,7 +147,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> details = Map.of("errors", errors);
 
         ErrorResponse response = new ErrorResponse(
-                HttpStatus.BAD_REQUEST, "유효하지 않은 입력값입니다.", details
+                HttpStatus.BAD_REQUEST.value(), "유효하지 않은 입력값입니다.", details
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
@@ -204,16 +206,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMongoException(MongoException ex) {
         ex.printStackTrace();
         ErrorResponse response = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 오류가 발생했습니다.", null);
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), "데이터베이스 오류가 발생했습니다.", null);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(NotificationException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationException(NotificationException ex) {
+        ex.printStackTrace();
+        ErrorCode errorCode = ex.getErrorCode();
+        HttpStatus status = errorCode.getHttpStatus();
+        String message = errorCode.getMessage();
+
+        ErrorResponse response = new ErrorResponse(
+                status.value(), message, null);
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         ex.printStackTrace();
         ErrorResponse response = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", null);
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부 오류가 발생했습니다.", null);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }

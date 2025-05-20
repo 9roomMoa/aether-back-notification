@@ -90,4 +90,17 @@ public class NotificationController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{nid}")
+    public ResponseEntity<CommonResponse> deleteNotification(
+            @AuthenticationPrincipal Claims claims,
+            @PathVariable String nid
+    ) {
+        String userId = claims.getSubject();
+        notificationService.deleteNotification(userId, nid);
+
+        CommonResponse response = new CommonResponse(
+                HttpStatus.OK, "알림 삭제에 성공했습니다.", null);
+        return ResponseEntity.ok(response);
+    }
 }

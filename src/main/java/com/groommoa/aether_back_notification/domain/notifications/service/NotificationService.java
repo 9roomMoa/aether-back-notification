@@ -3,6 +3,7 @@ package com.groommoa.aether_back_notification.domain.notifications.service;
 import com.groommoa.aether_back_notification.domain.notifications.dto.*;
 import com.groommoa.aether_back_notification.domain.notifications.entity.Notification;
 import com.groommoa.aether_back_notification.domain.notifications.entity.RelatedContent;
+import com.groommoa.aether_back_notification.domain.notifications.exception.NotificationException;
 import com.groommoa.aether_back_notification.domain.notifications.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.groommoa.aether_back_notification.global.common.exception.ErrorCode.NOTIFICATION_ACCESS_DENIED;
+import static com.groommoa.aether_back_notification.global.common.exception.ErrorCode.NOTIFICATION_NOT_FOUNT;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -110,5 +114,18 @@ public class NotificationService {
             }
         }
         return new ReadNotificationResponseDto(updatedIds, alreadyReadIds, notFoundIds, accessDeniedIds);
+    }
+
+    public void deleteNotification(String userId, String notificationId) {
+        Optional<Notification> optional = notificationRepository.findById(notificationId);
+        if (optional.isEmpty()){
+            throw new NotificationException(NOTIFICATION_NOT_FOUNT);
+        }
+
+        Notification notification = optional.get();
+        if (!notification.getReceiver().toHexString().equals(userId)){
+            throw new NotificationException(NOTIFICATION_ACCESS_DENIED);
+        }
+        notificationRepository.delete(notification);
     }
 }
