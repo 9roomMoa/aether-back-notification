@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Document(collection = "notices")
 @Getter
@@ -21,13 +22,15 @@ public class Notice {
     @Id
     private ObjectId id;
 
-    private NoticeLabel noticeLabel;
-
-    private String title;
+    @Builder.Default
+    private NoticeLabel noticeLabel = NoticeLabel.valueOf("INTERNAL");
 
     private String content;
 
     private ObjectId createdBy;
+
+    @Builder.Default
+    private Instant expiredAt = Instant.now().plus(3, ChronoUnit.DAYS);
 
     @CreatedDate
     private Instant createdAt;
