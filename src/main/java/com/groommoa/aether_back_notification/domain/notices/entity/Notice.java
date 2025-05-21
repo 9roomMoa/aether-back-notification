@@ -25,7 +25,13 @@ public class Notice {
     @Builder.Default
     private NoticeLabel noticeLabel = NoticeLabel.valueOf("INTERNAL");
 
+    @Builder.Default
+    private String title = "Untitled";
+
     private String content;
+
+    @Builder.Default
+    private boolean isPinned = false;
 
     private ObjectId createdBy;
 
