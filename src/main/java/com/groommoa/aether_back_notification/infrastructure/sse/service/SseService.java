@@ -10,9 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -62,7 +60,13 @@ public class SseService {
                 sseRepository.delete(userId);
             }
         }
+    }
 
+    public void sendEventToAllEmitters(String eventName, Object data) {
+        for (Map.Entry<String, SseEmitter> entry: sseRepository.getAllEmitters().entrySet()) {
+            String userId = entry.getKey();
+            sendEvent(userId, eventName, data);
+        }
     }
 
     private void sendMissedNotifications(String userId, String lastEventId){
