@@ -47,6 +47,20 @@ public class NoticeService {
     }
 
     public NoticeDto updateNotice(String requesterId, String noticeId, String content) {
+        Notice notice = getValidatedNotice(requesterId, noticeId);
+
+        notice.setContent(content);
+        noticeRepository.save(notice);
+
+        return NoticeDto.from(notice);
+    }
+
+    public void deleteNotice(String requesterId, String noticeId) {
+        Notice notice = getValidatedNotice(requesterId, noticeId);
+        noticeRepository.delete(notice);
+    }
+
+    private Notice getValidatedNotice(String requesterId, String noticeId) {
         Optional<Notice> optionalNotice = noticeRepository.findById(noticeId);
         if (optionalNotice.isEmpty()) {
             throw new NoticeException(ErrorCode.NOTICE_NOT_FOUND);
@@ -54,13 +68,8 @@ public class NoticeService {
         Notice notice = optionalNotice.get();
         String createdBy = notice.getCreatedBy().toHexString();
         if (requesterId != null && !requesterId.equals(createdBy)) {
-            log.info("요청 id: {}, 공지 생성자 id: {}", requesterId, createdBy);
             throw new NoticeException(ErrorCode.NOTICE_ACCESS_DENIED);
         }
-
-        notice.setContent(content);
-        noticeRepository.save(notice);
-
-        return NoticeDto.from(notice);
+        return notice;
     }
 }

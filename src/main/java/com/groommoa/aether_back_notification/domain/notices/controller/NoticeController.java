@@ -71,4 +71,18 @@ public class NoticeController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<CommonResponse> deleteNotice(
+            @AuthenticationPrincipal Claims claims,
+            @PathVariable String noticeId
+    ) {
+        String requesterId = claims.getSubject();
+        noticeService.deleteNotice(requesterId, noticeId);
+
+        CommonResponse response = new CommonResponse(
+                HttpStatus.OK, "공지 삭제에 성공했습니다.", null);
+
+        return ResponseEntity.ok(response);
+    }
+
 }
