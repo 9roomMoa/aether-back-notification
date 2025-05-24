@@ -3,12 +3,14 @@ package com.groommoa.aether_back_notification.domain.notices.controller;
 import com.groommoa.aether_back_notification.domain.notices.dto.CreateNoticeRequestDto;
 import com.groommoa.aether_back_notification.domain.notices.dto.CreateNoticeResponseDto;
 import com.groommoa.aether_back_notification.domain.notices.dto.NoticeDto;
+import com.groommoa.aether_back_notification.domain.notices.dto.UpdateNoticeRequestDto;
 import com.groommoa.aether_back_notification.domain.notices.entity.Notice;
 import com.groommoa.aether_back_notification.domain.notices.service.NoticeService;
 import com.groommoa.aether_back_notification.global.common.constants.HttpStatus;
 import com.groommoa.aether_back_notification.global.common.response.CommonResponse;
 import com.groommoa.aether_back_notification.global.common.utils.DtoUtils;
 import io.jsonwebtoken.Claims;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +52,22 @@ public class NoticeController {
 
         CommonResponse response = new CommonResponse(
                 HttpStatus.OK, "공지 조회에 성공했습니다.", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{noticeId}")
+    public ResponseEntity<CommonResponse> updateNotice(
+            @AuthenticationPrincipal Claims claims,
+            @PathVariable String noticeId,
+            @Valid @RequestBody UpdateNoticeRequestDto request
+    ) {
+        String requesterId = claims.getSubject();
+        String content = request.getContent();
+        NoticeDto updatedNotice = noticeService.updateNotice(requesterId, noticeId, content);
+
+        CommonResponse response = new CommonResponse(
+                HttpStatus.OK, "공지 수정에 성공했습니다.", DtoUtils.toMap(updatedNotice));
+
         return ResponseEntity.ok(response);
     }
 
