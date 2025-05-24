@@ -9,7 +9,7 @@ import java.time.Instant;
 
 @Getter
 @Builder
-public class NoticeResponseDto {
+public class NoticeDto {
 
     private final String id;
     private final String content;
@@ -17,8 +17,8 @@ public class NoticeResponseDto {
     private final boolean isNew;
     private final String createdAt;
 
-    public static NoticeResponseDto from(Notice notice) {
-        return NoticeResponseDto.builder()
+    public static NoticeDto from(Notice notice) {
+        return NoticeDto.builder()
                 .id(notice.getId().toHexString())
                 .content(notice.getContent())
                 .noticeLabel(notice.getNoticeLabel())

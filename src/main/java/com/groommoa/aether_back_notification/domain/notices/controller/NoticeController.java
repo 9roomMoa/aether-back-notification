@@ -2,7 +2,7 @@ package com.groommoa.aether_back_notification.domain.notices.controller;
 
 import com.groommoa.aether_back_notification.domain.notices.dto.CreateNoticeRequestDto;
 import com.groommoa.aether_back_notification.domain.notices.dto.CreateNoticeResponseDto;
-import com.groommoa.aether_back_notification.domain.notices.dto.NoticeResponseDto;
+import com.groommoa.aether_back_notification.domain.notices.dto.NoticeDto;
 import com.groommoa.aether_back_notification.domain.notices.entity.Notice;
 import com.groommoa.aether_back_notification.domain.notices.service.NoticeService;
 import com.groommoa.aether_back_notification.global.common.constants.HttpStatus;
@@ -45,7 +45,7 @@ public class NoticeController {
     public ResponseEntity<CommonResponse> getNotices(
             @RequestParam(defaultValue = "3") @Min(1) @Max(10) int limit
     ) {
-        List<NoticeResponseDto> content = noticeService.getNotices(limit);
+        List<NoticeDto> content = noticeService.getNotices(limit);
         Map<String, Object> result = Map.of("notices", content);
 
         CommonResponse response = new CommonResponse(
