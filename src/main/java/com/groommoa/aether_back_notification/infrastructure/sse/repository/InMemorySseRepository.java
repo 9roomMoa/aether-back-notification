@@ -31,4 +31,9 @@ public class InMemorySseRepository implements SseRepository {
     public boolean exists(String userId) {
         return emitters.containsKey(userId);
     }
+
+    @Override
+    public Map<String, SseEmitter> getAllEmitters() {
+        return emitters;
+    }
 }
