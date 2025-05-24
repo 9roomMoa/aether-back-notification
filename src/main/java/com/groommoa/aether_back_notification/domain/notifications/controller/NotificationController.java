@@ -65,17 +65,6 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value="/subscribe", produces= MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(
-            @AuthenticationPrincipal Claims claims,
-            @RequestHeader(value="Last-Event-ID", required = false) String lastEventId
-    ) {
-        String userId = claims.getSubject();
-        log.info("SSE 구독 요청 둘어옴 (userId={})", userId);
-
-        return sseService.subscribe(userId, lastEventId);
-    }
-
     @PatchMapping("/read")
     public ResponseEntity<CommonResponse> markNotificationsAsRead(
             @AuthenticationPrincipal Claims claims,
