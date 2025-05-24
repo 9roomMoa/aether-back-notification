@@ -3,6 +3,7 @@ package com.groommoa.aether_back_notification.global.common.handler;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.groommoa.aether_back_notification.domain.notices.exception.NoticeException;
 import com.groommoa.aether_back_notification.domain.notifications.exception.NotificationException;
 import com.groommoa.aether_back_notification.global.common.exception.ErrorCode;
 import com.groommoa.aether_back_notification.global.common.response.ErrorResponse;
@@ -213,6 +214,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotificationException.class)
     public ResponseEntity<ErrorResponse> handleNotificationException(NotificationException ex) {
+        ex.printStackTrace();
+        ErrorCode errorCode = ex.getErrorCode();
+        HttpStatus status = errorCode.getHttpStatus();
+        String message = errorCode.getMessage();
+
+        ErrorResponse response = new ErrorResponse(
+                status.value(), message, null);
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(NoticeException.class)
+    public ResponseEntity<ErrorResponse> handleNoticeException(NoticeException ex) {
         ex.printStackTrace();
         ErrorCode errorCode = ex.getErrorCode();
         HttpStatus status = errorCode.getHttpStatus();
