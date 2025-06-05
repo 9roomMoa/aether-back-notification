@@ -10,6 +10,7 @@ import lombok.Getter;
 @Builder
 public class NotificationResponseDto {
 
+    private final String id;
     private final String projectTitle;
     private final String taskTitle;
     private final NoticeType noticeType;
@@ -20,6 +21,7 @@ public class NotificationResponseDto {
 
     public static NotificationResponseDto from(Notification notification) {
         return NotificationResponseDto.builder()
+                .id(notification.getId().toHexString())
                 .projectTitle(notification.getRelatedContent().getProjectTitle())
                 .taskTitle(notification.getRelatedContent().getTaskTitle())
                 .noticeType(notification.getNoticeType())
